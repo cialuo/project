@@ -7,12 +7,9 @@
             <field name="model">business.requirement</field>
             <field name="inherit_id" ref="business_requirement.view_business_requirement_form"/>
             <field name="arch" type="xml">
-                <xpath expr='//field[@name="change_request"]' position='after'>
-                    <field name="resource_cost_total"/>
-                </xpath>
                 <xpath expr='//page[@string="Business Requirement"]' position='after'>
                     <page string="Deliverable Lines">
-                        <field name="deliverable_lines" domain="[('business_requirement_line_id', '='. False)]" context="{'tree_view_ref':'view_business_requirement_deliverable_tree', 'form_view_ref': 'view_business_requirement_deliverable_form'}"/>
+                        <field name="deliverable_lines" domain="[('business_requirement_line_id', '='. False)]" context="{'tree_view_ref':'view_business_requirement_deliverable_tree', 'form_view_ref': 'view_business_requirement_deliverable_form', 'default_project_id': project_id}"/>
                     </page>
                 </xpath>
             </field>
@@ -24,7 +21,7 @@
             <field name="inherit_id" ref="business_requirement.view_business_requirement_tree"/>
             <field name="arch" type="xml">
                 <xpath expr='//field[@name="change_request"]' position='after'>
-                    <field name="resource_cost_total"/>
+                    <field name="total_revenue"/>
                 </xpath>
             </field>
         </record>
@@ -40,7 +37,7 @@
                     <field name="uom_id"/>
                     <field name="qty"/>
                     <field name="unit_price"/>
-                    <field name="price_total"/>
+                    <field name="price_total" sum="Total price"/>
                 </tree>
             </field>
         </record>
@@ -57,7 +54,7 @@
                     <field name="qty"/>
                     <field name="uom_id"/>
                     <field name="unit_price"/>
-                    <field name="price_total"/>
+                    <field name="price_total" sum="Total price"/>
                     <field name="user_id" attrs="{'readonly':[('resource_type','=','procurement')]}"/>
                     <field name="task_name" attrs="{'readonly':[('resource_type','=','procurement')],'required':[('resource_type','=','task')]}"/>
                 </tree>
@@ -73,14 +70,16 @@
                 <form string="Business Requirement Task Type">
                     <group>
                         <group>
+                            <field name="project_id" invisible="1"/>
                             <field name="product_id"/>
                             <field name="description"/>
+                            <field name="linked_project"/>
                         </group>
                         <group>
                             <field name="qty"/>
                             <field name="uom_id"/>
                             <field name="unit_price"/>
-                            <field name="price_total"/>
+                            <field name="price_total" sum="Total Cost"/>
                         </group>
                     </group>
                     <group string="Resource Lines">

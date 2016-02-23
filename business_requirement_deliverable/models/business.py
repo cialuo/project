@@ -43,11 +43,11 @@ class BusinessRequirementResource(models.Model):
         ondelete='cascade'
     )
     unit_price = fields.Float(
-        string='Sales Price'
+        string='Cost Price'
     )
     price_total = fields.Float(
         compute='_get_price_total',
-        string='Subtotal'
+        string='Total Cost'
     )
 
     @api.one
@@ -124,6 +124,18 @@ class BusinessRequirementDeliverable(models.Model):
         compute='_get_price_total',
         string='Subtotal'
     )
+    linked_project = fields.Many2one(
+        string='Linked project',
+        comodel_name='project.project',
+        groups='project.group_project_manager',
+        states={'draft': [('readonly', False)]}
+    )
+    project_id = fields.Many2one(
+        string='Master Project',
+        comodel_name='project.project',
+        related='business_requirement_id.project_id',
+        store=True,
+    )
 
     @api.one
     @api.depends('unit_price', 'qty')
@@ -141,9 +153,37 @@ class BusinessRequirementDeliverable(models.Model):
             description = product.name
             uom_id = product.uom_id.id
             unit_price = product.list_price
+        if self.business_requirement_id.project_id.pricelist_id and \
+                self.business_requirement_id.partner_id and self.uom_id:
+            product = self.product_id.with_context(
+                lang=self.business_requirement_id.partner_id.lang,
+                partner=self.business_requirement_id.partner_id.id,
+                quantity=self.qty,
+                pricelist=self.business_requirement_id.
+                project_id.pricelist_id.id,
+                uom=self.uom_id.id,
+            )
+            unit_price = product.price
         self.description = description
         self.uom_id = uom_id
         self.unit_price = unit_price
+
+    @api.onchange('uom_id', 'qty')
+    def product_uom_change(self):
+        if not self.uom_id:
+            self.price_unit = 0.0
+            return
+        if self.business_requirement_id.project_id.pricelist_id and \
+                self.business_requirement_id.partner_id:
+            product = self.product_id.with_context(
+                lang=self.business_requirement_id.partner_id.lang,
+                partner=self.business_requirement_id.partner_id.id,
+                quantity=self.qty,
+                pricelist=self.business_requirement_id.
+                project_id.pricelist_id.id,
+                uom=self.uom_id.id,
+            )
+            self.unit_price = product.price
 
 
 class BusinessRequirement(models.Model):
@@ -155,19 +195,19 @@ class BusinessRequirement(models.Model):
         string='Deliverable Lines',
         copy=True,
         readonly=True,
-        states={'draft': [('readonly', False)]}
+        states={'draft': [('readonly', False)]},
     )
-    resource_cost_total = fields.Float(
-        compute='_get_deliverable_cost_total',
+    total_revenue = fields.Float(
+        compute='_compute_deliverable_total',
         string='Total Revenue',
         store=True
     )
 
     @api.one
     @api.depends(
-        'deliverable_lines.price_total'
+        'deliverable_lines'
     )
-    def _get_deliverable_cost_total(self):
-        cost_total = sum(
-            line.price_total for line in self.deliverable_lines)
-        self.resource_cost_total = cost_total
+    def _compute_deliverable_total(self):
+        if self.deliverable_lines:
+            self.total_revenue = sum(
+                line.price_total for line in self.deliverable_lines)
