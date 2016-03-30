@@ -42,11 +42,13 @@ group_business_requirement_cost_control',
                 resource.business_requirement_deliverable_id.project_id
             if deliverable_project.pricelist_id and \
                     deliverable_project.partner_id and resource.uom_id:
+                pricelist = \
+                    deliverable_project.get_closest_ancestor_pricelist()
                 product = resource.product_id.with_context(
                     lang=deliverable_project.partner_id.lang,
                     partner=deliverable_project.partner_id.id,
                     quantity=resource.qty,
-                    pricelist=deliverable_project.pricelist_id.id,
+                    pricelist=pricelist.id,
                     uom=resource.uom_id.id,
                 )
                 resource.sale_price_unit = product.price
@@ -63,11 +65,13 @@ group_business_requirement_cost_control',
                 resource.business_requirement_deliverable_id.project_id
             if deliverable_project.pricelist_id and \
                     deliverable_project.partner_id:
+                pricelist = \
+                    deliverable_project.get_closest_ancestor_pricelist()
                 product = resource.product_id.with_context(
                     lang=deliverable_project.partner_id.lang,
                     partner=deliverable_project.partner_id.id,
                     quantity=resource.qty,
-                    pricelist=deliverable_project.pricelist_id.id,
+                    pricelist=pricelist.id,
                     uom=resource.uom_id.id,
                 )
                 resource.sale_price_unit = product.price

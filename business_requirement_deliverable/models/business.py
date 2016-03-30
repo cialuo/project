@@ -206,14 +206,13 @@ class BusinessRequirementDeliverable(models.Model):
             self.price_unit = 0.0
             return
         br = self.business_requirement_id
-        if br.project_id.pricelist_id and \
-                br.partner_id:
+        if br.project_id and br.partner_id:
+            pricelist = br.project_id.get_closest_ancestor_pricelist()
             product = self.product_id.with_context(
                 lang=br.partner_id.lang,
                 partner=br.partner_id.id,
                 quantity=self.qty,
-                pricelist=br.
-                project_id.pricelist_id.id,
+                pricelist=pricelist.id,
                 uom=self.uom_id.id,
             )
             self.unit_price = product.price
@@ -240,16 +239,17 @@ class BusinessRequirement(models.Model):
     @api.depends(
         'deliverable_lines',
         'company_id.currency_id',
-        'project_id.pricelist_id.currency_id',
+        'project_id',
     )
     def _compute_deliverable_total(self):
         for br in self:
+            pricelist = br.project_id.get_closest_ancestor_pricelist()
             if br.deliverable_lines:
                 total_revenue_origin = sum(
                     line.price_total for line in br.deliverable_lines)
-                if br.project_id.pricelist_id.currency_id:
+                if pricelist.currency_id:
                     br.total_revenue = \
-                        br.project_id.pricelist_id.currency_id.compute(
+                        pricelist.currency_id.compute(
                             total_revenue_origin, br.company_id.currency_id)
                 else:
                     br.total_revenue = total_revenue_origin
