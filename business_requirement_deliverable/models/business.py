@@ -176,6 +176,7 @@ class BusinessRequirementDeliverable(models.Model):
         unit_price = 0
         product = self.product_id
         tax_ids = False
+        br = self.business_requirement_id
         if product:
             description = product.name_get()[0][1]
             uom_id = product.uom_id.id
@@ -183,14 +184,14 @@ class BusinessRequirementDeliverable(models.Model):
             tax_ids = product.taxes_id
         if product.description_sale:
             description += '\n' + product.description_sale
-        if self.business_requirement_id.project_id.pricelist_id and \
-                self.business_requirement_id.partner_id and self.uom_id:
+        if br.project_id.pricelist_id and \
+                br.partner_id and self.uom_id:
+            pricelist = br.project_id.get_closest_ancestor_pricelist()
             product = self.product_id.with_context(
-                lang=self.business_requirement_id.partner_id.lang,
-                partner=self.business_requirement_id.partner_id.id,
+                lang=br.partner_id.lang,
+                partner=br.partner_id.id,
                 quantity=self.qty,
-                pricelist=self.business_requirement_id.
-                project_id.pricelist_id.id,
+                pricelist=pricelist.id,
                 uom=self.uom_id.id,
             )
             unit_price = product.price
@@ -204,13 +205,14 @@ class BusinessRequirementDeliverable(models.Model):
         if not self.uom_id:
             self.price_unit = 0.0
             return
-        if self.business_requirement_id.project_id.pricelist_id and \
-                self.business_requirement_id.partner_id:
+        br = self.business_requirement_id
+        if br.project_id.pricelist_id and \
+                br.partner_id:
             product = self.product_id.with_context(
-                lang=self.business_requirement_id.partner_id.lang,
-                partner=self.business_requirement_id.partner_id.id,
+                lang=br.partner_id.lang,
+                partner=br.partner_id.id,
                 quantity=self.qty,
-                pricelist=self.business_requirement_id.
+                pricelist=br.
                 project_id.pricelist_id.id,
                 uom=self.uom_id.id,
             )

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # © 2016 Elico Corp (https://www.elico-corp.com).
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
-from openerp import fields, models
+from openerp import api, fields, models
 
 
 class Project(models.Model):
@@ -15,3 +15,9 @@ class Project(models.Model):
         Deliverables linked to this project.
         Currency of the Deliverables will be the one from this pricelist.'''
     )
+
+    @api.multi
+    def get_closest_ancestor_pricelist(self):
+        for project in self:
+            pricelist = project.pricelist_id
+            return pricelist
