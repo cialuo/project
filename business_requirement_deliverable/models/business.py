@@ -247,7 +247,7 @@ class BusinessRequirement(models.Model):
             if br.deliverable_lines:
                 total_revenue_origin = sum(
                     line.price_total for line in br.deliverable_lines)
-                if pricelist.currency_id:
+                if pricelist:
                     br.total_revenue = \
                         pricelist.currency_id.compute(
                             total_revenue_origin, br.company_id.currency_id)

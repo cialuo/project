@@ -19,5 +19,6 @@ class Project(models.Model):
     @api.multi
     def get_closest_ancestor_pricelist(self):
         for project in self:
-            pricelist = project.pricelist_id
+            pricelist = self.env['product.pricelist'].browse(
+                project.pricelist_id.id)
             return pricelist
