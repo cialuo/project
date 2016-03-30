@@ -8,8 +8,20 @@ class BusinessRequirementDeliverable(models.Model):
     _inherit = "business.requirement.deliverable"
 
     def _prepare_resource_lines(self):
-        rl_data = self.product_id.sudo().resource_lines.copy_data()
-        rl_data = [(0, 0, item) for index, item in enumerate(rl_data)]
+        rl_data = []
+        pricelist = self.project_id.get_closest_ancestor_pricelist()
+        res = self.product_id.sudo().resource_lines.copy_data()
+        for index, item in enumerate(res):
+            if pricelist:
+                product_obj = self.env['product.product'].browse(
+                    item.get('product_id'))
+                product = product_obj.with_context(
+                    quantity=item.get('qty'),
+                    pricelist=pricelist.id,
+                    uom=item.get('uom_id'),
+                )
+                item.update({'sale_price_unit': product.price})
+            rl_data.append((0, 0, item))
         return rl_data
 
     @api.multi
