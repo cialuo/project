@@ -150,6 +150,12 @@ class BusinessRequirement(models.Model):
         default=_get_default_company,
     )
 
+    @api.model
+    def get_estimation_pricelist(self, project):
+        pricelist = self.env['product.pricelist'].browse(
+            project.pricelist_id.id)
+        return pricelist
+
     @api.one
     @api.onchange('project_id')
     def _project_id_change(self):
