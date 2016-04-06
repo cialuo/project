@@ -9,7 +9,7 @@
             <field name="arch" type="xml">
                 <xpath expr='//page[@string="Business Requirement"]' position='after'>
                     <page string="Deliverable Lines">
-                        <field name="deliverable_lines" domain="[('business_requirement_line_id', '='. False)]" context="{'tree_view_ref':'business_requirement_deliverable.view_business_requirement_deliverable_tree', 'form_view_ref': 'business_requirement_deliverable.view_business_requirement_deliverable_form', 'default_project_id': project_id,}"/>
+                        <field name="deliverable_lines" domain="[('business_requirement_line_id', '='. False)]" context="{'tree_view_ref':'business_requirement_deliverable.view_business_requirement_deliverable_tree', 'form_view_ref': 'business_requirement_deliverable.view_business_requirement_deliverable_form', 'default_project_id': project_id}"/>
                     </page>
                 </xpath>
             </field>
@@ -70,6 +70,7 @@
                     <group>
                         <group>
                             <field name="project_id" invisible="1"/>
+                            <field name="business_requirement_id" invisible="1"/>
                             <field name="product_id"/>
                             <label for="qty"/>
                             <div>

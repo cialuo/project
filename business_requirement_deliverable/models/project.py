@@ -15,10 +15,3 @@ class Project(models.Model):
         Deliverables linked to this project.
         Currency of the Deliverables will be the one from this pricelist.'''
     )
-
-    @api.multi
-    def get_closest_ancestor_pricelist(self):
-        for project in self:
-            pricelist = self.env['product.pricelist'].browse(
-                project.pricelist_id.id)
-            return pricelist

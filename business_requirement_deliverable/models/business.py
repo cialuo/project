@@ -177,6 +177,8 @@ class BusinessRequirementDeliverable(models.Model):
         product = self.product_id
         tax_ids = False
         br = self.business_requirement_id
+        pricelist = br.get_estimation_pricelist(br.project_id)
+        partner = br.partner_id
         if product:
             description = product.name_get()[0][1]
             uom_id = product.uom_id.id
@@ -184,12 +186,11 @@ class BusinessRequirementDeliverable(models.Model):
             tax_ids = product.taxes_id
         if product.description_sale:
             description += '\n' + product.description_sale
-        if br.project_id.pricelist_id and \
+        if pricelist and \
                 br.partner_id and self.uom_id:
-            pricelist = br.project_id.get_closest_ancestor_pricelist()
             product = self.product_id.with_context(
-                lang=br.partner_id.lang,
-                partner=br.partner_id.id,
+                lang=partner.lang,
+                partner=partner.id,
                 quantity=self.qty,
                 pricelist=pricelist.id,
                 uom=self.uom_id.id,
@@ -206,11 +207,12 @@ class BusinessRequirementDeliverable(models.Model):
             self.price_unit = 0.0
             return
         br = self.business_requirement_id
-        if br.project_id and br.partner_id:
-            pricelist = br.project_id.get_closest_ancestor_pricelist()
+        pricelist = br.get_estimation_pricelist(br.project_id)
+        partner = br.partner_id
+        if pricelist and br.partner_id:
             product = self.product_id.with_context(
-                lang=br.partner_id.lang,
-                partner=br.partner_id.id,
+                lang=partner.lang,
+                partner=partner.id,
                 quantity=self.qty,
                 pricelist=pricelist.id,
                 uom=self.uom_id.id,
@@ -243,7 +245,7 @@ class BusinessRequirement(models.Model):
     )
     def _compute_deliverable_total(self):
         for br in self:
-            pricelist = br.project_id.get_closest_ancestor_pricelist()
+            pricelist = br.get_estimation_pricelist(br.project_id)
             if br.deliverable_lines:
                 total_revenue_origin = sum(
                     line.price_total for line in br.deliverable_lines)

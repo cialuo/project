@@ -9,13 +9,17 @@ class BusinessRequirementDeliverable(models.Model):
 
     def _prepare_resource_lines(self):
         rl_data = []
-        pricelist = self.project_id.get_closest_ancestor_pricelist()
+        br = self.business_requirement_id
+        partner = br.partner_id
+        pricelist = br.get_estimation_pricelist(br.project_id)
         res = self.product_id.sudo().resource_lines.copy_data()
         for index, item in enumerate(res):
             if pricelist:
                 product_obj = self.env['product.product'].browse(
                     item.get('product_id'))
                 product = product_obj.with_context(
+                    lang=partner.lang,
+                    partner=partner.id,
                     quantity=item.get('qty'),
                     pricelist=pricelist.id,
                     uom=item.get('uom_id'),

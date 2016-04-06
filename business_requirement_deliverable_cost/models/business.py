@@ -38,15 +38,13 @@ group_business_requirement_cost_control',
     def product_id_change(self):
         super(BusinessRequirementResource, self).product_id_change()
         for resource in self:
-            deliverable_project = \
+            br = resource.business_requirement_deliverable_id.\
+                business_requirement_id
+            br_project = \
                 resource.business_requirement_deliverable_id.project_id
-            if deliverable_project.pricelist_id and \
-                    deliverable_project.partner_id and resource.uom_id:
-                pricelist = \
-                    deliverable_project.get_closest_ancestor_pricelist()
+            pricelist = br.get_estimation_pricelist(br_project)
+            if pricelist and resource.uom_id:
                 product = resource.product_id.with_context(
-                    lang=deliverable_project.partner_id.lang,
-                    partner=deliverable_project.partner_id.id,
                     quantity=resource.qty,
                     pricelist=pricelist.id,
                     uom=resource.uom_id.id,
@@ -61,15 +59,16 @@ group_business_requirement_cost_control',
             if not resource.uom_id:
                 resource.sale_price_unit = 0.0
                 return
-            deliverable_project = \
+            br = resource.business_requirement_deliverable_id.\
+                business_requirement_id
+            br_project = \
                 resource.business_requirement_deliverable_id.project_id
-            if deliverable_project.pricelist_id and \
-                    deliverable_project.partner_id:
-                pricelist = \
-                    deliverable_project.get_closest_ancestor_pricelist()
+            partner = br.partner_id
+            pricelist = br.get_estimation_pricelist(br_project)
+            if pricelist and partner:
                 product = resource.product_id.with_context(
-                    lang=deliverable_project.partner_id.lang,
-                    partner=deliverable_project.partner_id.id,
+                    lang=partner.lang,
+                    partner=partner.id,
                     quantity=resource.qty,
                     pricelist=pricelist.id,
                     uom=resource.uom_id.id,
